@@ -1,7 +1,7 @@
 # Cora Node Classification Challenge
 
 ## Overview
-Predict research topics of academic papers in the Cora citation network. Semi-supervised node classification with only 140 labeled nodes out of 2,708.
+Predict research topics of academic papers in the Cora citation network. Node classification with 80% training data and 20% held-out test set.
 
 ## Task
 - Nodes: 2,708 papers
