@@ -1,0 +1,84 @@
+# Cora Node Classification Challenge
+
+## Overview
+Predict research topics of academic papers in the Cora citation network. Semi-supervised node classification with only 140 labeled nodes out of 2,708.
+
+## Task
+- Nodes: 2,708 papers
+- Edges: 5,429 citations  
+- Features: 1,433 bag-of-words
+- Classes: 7 research topics
+- Train: 2,166 nodes (80%), Test: 542 nodes (20%)
+
+## Dataset
+
+| File | Description |
+|------|-------------|
+| data/nodes.csv | Node features (node_id + 1433 features) |
+| data/edges.csv | Edge list (source, target) |
+| data/train.csv | Training labels (node_id, label) |
+| data/test.csv | Test node IDs |
+| submissions/sample_submission.csv | Submission format example |
+
+## Evaluation
+Macro F1-Score - treats all 7 classes equally.
+
+## Rules
+- Must use GNN methods (GCN, GAT, GraphSAGE, etc.)
+- Any framework allowed (DGL, PyG, etc.)
+- No external data or pretrained embeddings
+- No using test labels
+- Inference under 60 seconds
+
+## Repository Structure
+
+```
+gnn-challenge/
+├── data/
+│   ├── train.csv
+│   └── test.csv
+├── submissions/
+│   └── sample_submission.csv
+├── starter_code/
+│   ├── baseline.py
+│   └── requirements.txt
+├── README.md
+├── scoring_script.py
+├── update_leaderboard.py
+└── LICENSE
+```
+
+## Getting Started
+
+```bash
+pip install -r starter_code/requirements.txt
+cd starter_code
+python baseline.py
+```
+
+## Submission Format
+
+CSV with two columns:
+```csv
+node_id,target
+0,3
+5,1
+12,6
+```
+
+## How to Submit
+
+1. Fork this repository
+2. Clone your fork locally
+3. Run your model and save predictions to `submissions/your_team_name.csv`
+4. Commit and push to your fork
+5. Create a Pull Request
+6. GitHub Actions will automatically score and update the leaderboard
+
+## Leaderboard
+
+See [leaderboard.md](leaderboard.md)
+
+| Rank | Team | Macro F1 | Method |
+|------|------|----------|--------|
+| 1 | Baseline | 0.8763 | 2-layer GCN |

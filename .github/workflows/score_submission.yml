@@ -1,0 +1,26 @@
+name: Score Submission
+
+on:
+  pull_request:
+    paths:
+      - 'submissions/*.csv'
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r starter_code/requirements.txt
+      - name: Run scoring
+        run: |
+          SUBMISSION=$(git diff --name-only origin/main HEAD -- 'submissions/*.csv' | head -1)
+          python scoring_script.py $SUBMISSION
+      - name: Update leaderboard
+        run: |
+          SUBMISSION=$(git diff --name-only origin/main HEAD -- 'submissions/*.csv' | head -1)
+          python update_leaderboard.py $SUBMISSION
