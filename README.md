@@ -75,9 +75,16 @@ node_id,target
 1. Fork this repository
 2. Clone your fork locally
 3. Run your model and save predictions to `submissions/your_team_name.csv`
-4. Commit and push to your fork
-5. Create a Pull Request
-6. GitHub Actions will automatically score and update the leaderboard
+4. Score your submission locally:
+   ```bash
+   python scoring_script.py submissions/your_team_name.csv
+   ```
+5. Update the leaderboard:
+   ```bash
+   python update_leaderboard.py submissions/your_team_name.csv "Your Team" "Your Method"
+   ```
+6. Commit and push to your fork
+7. Create a Pull Request
 
 ## Leaderboard
 
