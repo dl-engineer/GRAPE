@@ -1,10 +1,10 @@
 # GRAPE - Graph Retinal Analysis for Prediction and Evaluation
 
-GNN challenge for diabetic retinopathy classification from retinal vessel graphs.
+A GNN benchmark for diabetic retinopathy classification from retinal vessel graphs.
 
 **Task:** Binary graph classification (healthy vs DR)  
-**Metric:** Macro F1, AUROC  
-**Data:** 70 graphs from 3 public datasets
+**Metric:** Macro F1 Score (leaderboard), AUROC (also reported)  
+**Data:** DRIVE[[1]](https://drive.grand-challenge.org/) + STARE[[2]](https://cecas.clemson.edu/~ahoover/stare/) + HRF[[3]](https://www5.cs.fau.de/research/data/fundus-images/) (70 graphs total)
 
 📊 **[Live Leaderboard](https://muhammad0isah.github.io/GRAPE/leaderboard.html)**
 
@@ -14,8 +14,11 @@ GNN challenge for diabetic retinopathy classification from retinal vessel graphs
 
 - **463 million** people have diabetes globally
 - **Diabetic retinopathy (DR)** is the leading cause of blindness in working-age adults
-- Retinal blood vessels form **natural graphs** — bifurcations as nodes, vessel segments as edges
+- Retinal blood vessels form **natural graphs** - bifurcations as nodes, vessel segments as edges
 - Vessel topology (branching patterns, tortuosity, connectivity) indicates disease progression
+- **No unified GNN benchmark** exists for retinal vessel graph analysis
+
+This challenge evaluates GNN methods on clinically-relevant retinal vessel classification.
 
 ---
 
