@@ -3,24 +3,35 @@ name: Score Submission
 on:
   pull_request:
     paths:
-      - 'submissions/*.csv'
+      - 'submissions/inbox/**'
 
 jobs:
   score:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+      
       - name: Install dependencies
-        run: pip install -r starter_code/requirements.txt
-      - name: Run scoring
+        run: pip install pandas scikit-learn
+      
+      - name: Validate submission format
         run: |
-          SUBMISSION=$(git diff --name-only origin/main HEAD -- 'submissions/*.csv' | head -1)
-          python scoring_script.py $SUBMISSION
-      - name: Update leaderboard
+          PRED=$(find submissions/inbox -name "predictions.csv" | head -1)
+          if [ -z "$PRED" ]; then
+            echo "No predictions.csv found"
+            exit 1
+          fi
+          python competition/validate_submission.py "$PRED" data/public/test_data.csv
+      
+      - name: Create test labels from secret
         run: |
-          SUBMISSION=$(git diff --name-only origin/main HEAD -- 'submissions/*.csv' | head -1)
-          python update_leaderboard.py $SUBMISSION
+          echo "${{ secrets.TEST_LABELS_CSV }}" > /tmp/test_labels.csv
+      
+      - name: Evaluate submission
+        run: |
+          PRED=$(find submissions/inbox -name "predictions.csv" | head -1)
+          python competition/evaluate.py "$PRED" /tmp/test_labels.csv
