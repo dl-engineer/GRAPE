@@ -3,7 +3,7 @@
 A GNN benchmark for diabetic retinopathy classification from retinal vessel graphs.
 
 **Task:** Binary graph classification (healthy vs DR)  
-**Metric:** Macro F1 Score (leaderboard), AUROC (also reported)  
+**Metric:** Macro F1 Score (leaderboard score), AUROC  
 **Data:** DRIVE[[1]](https://drive.grand-challenge.org/) + STARE[[2]](https://cecas.clemson.edu/~ahoover/stare/) + HRF[[3]](https://www5.cs.fau.de/research/data/fundus-images/) (70 graphs total)
 
 **Live Leaderboard at** [https://muhammad0isah.github.io/GRAPE/leaderboard.html](https://muhammad0isah.github.io/GRAPE/leaderboard.html)
