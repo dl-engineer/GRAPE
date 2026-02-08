@@ -12,7 +12,6 @@ A GNN benchmark for diabetic retinopathy classification from retinal vessel grap
 
 ## Motivation
 
-- **Over 463 million** people have diabetes globally
 - **Diabetic retinopathy (DR)** is the leading cause of blindness in working-age adults
 - Retinal blood vessels form **natural graphs** - bifurcations as nodes, vessel segments as edges
 - Vessel topology (branching patterns, tortuosity, connectivity) indicates disease progression
