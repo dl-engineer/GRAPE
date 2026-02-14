@@ -1,0 +1,2 @@
+model: VesselGCN
+notes: 3-layer GCN with skip connections
