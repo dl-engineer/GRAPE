@@ -1,7 +1,7 @@
 name: Score Submission
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - 'submissions/inbox/**'
 
@@ -9,7 +9,22 @@ jobs:
   score:
     runs-on: ubuntu-latest
     steps:
+      # Checkout base repo (has decrypt scripts, validation, etc.)
       - uses: actions/checkout@v4
+
+      # Fetch ONLY the submitted .enc file from the PR fork
+      - name: Checkout PR submission file
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr-submission
+          sparse-checkout: submissions/inbox
+          sparse-checkout-cone-mode: true
+
+      - name: Copy submission into workspace
+        run: |
+          cp -r pr-submission/submissions/inbox/* submissions/inbox/ 2>/dev/null || true
+          rm -rf pr-submission
 
       - uses: actions/setup-python@v5
         with:
