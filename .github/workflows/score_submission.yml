@@ -10,28 +10,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      
+
       - name: Install dependencies
-        run: pip install pandas scikit-learn
-      
-      - name: Validate submission format
+        run: pip install pandas scikit-learn cryptography
+
+      - name: Detect team and decrypt
+        id: team
+        env:
+          SUBMISSION_PRIVATE_KEY: ${{ secrets.SUBMISSION_PRIVATE_KEY }}
         run: |
-          PRED=$(find submissions/inbox -name "predictions.csv" | head -1)
-          if [ -z "$PRED" ]; then
-            echo "No predictions.csv found"
+          ENC=$(find submissions/inbox -name "*.enc" | head -1)
+          if [ -z "$ENC" ]; then
+            echo "::error::No .enc file found in submissions/inbox/"
             exit 1
           fi
-          python competition/validate_submission.py "$PRED" data/public/test_data.csv
-      
-      - name: Create test labels from secret
+          TEAM=$(echo "$ENC" | sed 's|submissions/inbox/||' | cut -d'/' -f1)
+          python encryption/decrypt.py "$ENC" /tmp/predictions.csv
+          echo "name=$TEAM" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce one-submission policy
+        run: |
+          TEAM="${{ steps.team.outputs.name }}"
+          if grep -qi ",$TEAM," leaderboard/leaderboard.csv 2>/dev/null; then
+            echo "::error::Team '$TEAM' has already submitted."
+            exit 1
+          fi
+
+      - name: Validate submission format
+        run: python competition/validate_submission.py /tmp/predictions.csv data/public/test_data.csv
+
+      - name: Evaluate
         run: |
           echo "${{ secrets.TEST_LABELS_CSV }}" > /tmp/test_labels.csv
-      
-      - name: Evaluate submission
-        run: |
-          PRED=$(find submissions/inbox -name "predictions.csv" | head -1)
-          python competition/evaluate.py "$PRED" /tmp/test_labels.csv
+          python competition/evaluate.py /tmp/predictions.csv /tmp/test_labels.csv

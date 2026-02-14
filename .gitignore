@@ -1,12 +1,16 @@
 # Private test labels - use GitHub Secrets
 data/private/
 
+# Encryption private key
+encryption/private_key.pem
+
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
 
-# Local submission outputs
+# Raw submissions (only .enc files are tracked)
+submissions/inbox/**/*.csv
 submission.csv
 
 # OS files

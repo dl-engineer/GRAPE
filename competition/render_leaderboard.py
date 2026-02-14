@@ -36,14 +36,20 @@ def main():
 
   lines.append("| Rank | Team | Model | Score | Date (UTC) | Notes |\n")
   lines.append("|---:|---|---|---:|---|---|\n")
-  for i, r in enumerate(rows, start=1):
+  rank = 1
+  for i, r in enumerate(rows):
+    if i > 0:
+      prev_score = rows[i-1].get("score", "")
+      cur_score = r.get("score", "")
+      if cur_score != prev_score:
+        rank = i + 1
     team = (r.get("team") or "").strip()
     model = (r.get("model") or "").strip()
     score = (r.get("score") or "").strip()
     ts = (r.get("timestamp_utc") or "").strip()
     notes = (r.get("notes") or "").strip()
     model_disp = f"`{model}`" if model else ""
-    lines.append(f"| {i} | {team} | {model_disp} | {score} | {ts} | {notes} |\n")
+    lines.append(f"| {rank} | {team} | {model_disp} | {score} | {ts} | {notes} |\n")
 
   MD_PATH.write_text("".join(lines), encoding="utf-8")
 

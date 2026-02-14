@@ -3,100 +3,205 @@
 A GNN benchmark for diabetic retinopathy classification from retinal vessel graphs.
 
 **Task:** Binary graph classification (healthy vs DR)  
-**Metric:** Macro F1 Score (leaderboard score), AUROC  
-**Data:** DRIVE[[1]](https://drive.grand-challenge.org/) + STARE[[2]](https://cecas.clemson.edu/~ahoover/stare/) + HRF[[3]](https://www5.cs.fau.de/research/data/fundus-images/) (70 graphs total)
+**Metric:** Macro F1 Score (leaderboard_score), AUROC  
+**Data:** 70 retinal vessel graphs from DRIVE + STARE + HRF  
+**Leaderboard:** [muhammad0isah.github.io/GRAPE/leaderboard.html](https://muhammad0isah.github.io/GRAPE/leaderboard.html)
 
-**Live Leaderboard at** [https://muhammad0isah.github.io/GRAPE/leaderboard.html](https://muhammad0isah.github.io/GRAPE/leaderboard.html)
- 
 ---
 
-## Motivation
+## Background
 
-- **Diabetic retinopathy (DR)** is the leading cause of blindness in working-age adults
-- Retinal blood vessels form **natural graphs** - bifurcations as nodes, vessel segments as edges
-- Vessel topology (branching patterns, tortuosity, connectivity) indicates disease progression
-- **No unified GNN benchmark** exists for retinal vessel graph analysis
-
-This challenge evaluates GNN methods on clinically-relevant retinal vessel classification.
+Diabetic retinopathy (DR) is the leading cause of blindness in working-age adults. Retinal blood vessels form natural graphs where bifurcation points are nodes and vessel segments are edges. Changes in vessel topology (branching patterns, tortuosity, connectivity) indicate disease progression. This competition benchmarks GNN methods on classifying these graphs as healthy or DR-positive.
 
 ---
 
 ## Data Sources
 
-| Dataset | Images | Healthy | DR | Source |
+| Dataset | Graphs | Healthy | DR | Source |
 |---------|--------|---------|-----|--------|
-| DRIVE | 20 | 17 | 3 | https://drive.grand-challenge.org/ |
-| STARE | 20 | 16 | 4 | https://cecas.clemson.edu/~ahoover/stare/ |
-| HRF | 30 | 15 | 15 | https://www5.cs.fau.de/research/data/fundus-images/ |
+| DRIVE | 20 | 17 | 3 | [drive.grand-challenge.org](https://drive.grand-challenge.org/) |
+| STARE | 20 | 16 | 4 | [cecas.clemson.edu/~ahoover/stare](https://cecas.clemson.edu/~ahoover/stare/) |
+| HRF | 30 | 15 | 15 | [www5.cs.fau.de/research/data/fundus-images](https://www5.cs.fau.de/research/data/fundus-images/) |
 | **Total** | **70** | **48** | **22** | |
 
-**Graph IDs:**
-- `D_XX` = DRIVE image XX
-- `S_XX` = STARE image XX
-- `H_XX` = HRF healthy image XX
-- `R_XX` = HRF DR image XX
+**Split:** 55 train / 15 test (stratified).
+
+**Graph ID prefixes:** `D_XX` = DRIVE, `S_XX` = STARE, `H_XX` = HRF healthy, `R_XX` = HRF DR.
 
 ---
 
-## Structure
+## Dataset Challenges
+
+- **Class imbalance** — 48 healthy vs 22 DR (~69%/31%)
+- **Cross-domain shift** — three imaging sources with different resolutions and protocols
+- **Variable graph sizes** — ~30 to 500+ nodes per graph
+- **Noisy topology** — graph extraction from segmentation introduces structural noise
+
+---
+
+## Repository Structure
 
 ```
-data/
-├── public/                 # Pre-processed (ready to use)
-│   ├── train_data.csv      # 55 graphs, node features + edges
-│   ├── train_labels.csv    # Training labels
-│   ├── test_data.csv       # 15 graphs for prediction
-│   └── sample_submission.csv
-└── raw/                    # Original images + masks
-    ├── drive/              # XX_training.tif + XX_manual1.gif
-    ├── stare/              # imXXXX.ppm + imXXXX.ah.ppm
-    └── hrf/                # XX_h.jpg/XX_dr.JPG + XX_h.tif/XX_dr.tif
+GRAPE/
+├── data/
+│   └── public/
+│       ├── train_data.csv          # 55 graphs (nodes + edges)
+│       ├── train_labels.csv        # training labels
+│       ├── test_data.csv           # 15 graphs for prediction
+│       └── sample_submission.csv   # expected output format
+├── encryption/
+│   ├── public_key.pem              # RSA public key (for encrypting submissions)
+│   ├── encrypt.py                  # encryption script
+│   └── decrypt.py                  # decryption (CI-only)
+├── competition/
+│   ├── evaluate.py                 # scoring script
+│   ├── validate_submission.py      # format validation
+│   └── metrics.py                  # macro F1, AUROC
+├── baseline.py                     # GAT baseline model
+├── submissions/
+│   └── inbox/<team>/               # place your .enc file here
+└── leaderboard/
+    └── leaderboard.csv             # auto-updated scores
 ```
 
-**Two options:**
-1. Use pre-processed CSVs directly (recommended)
-2. Use raw images for custom graph extraction
+---
+
+## Graph Specification (A, X)
+
+Each graph is defined by a **node feature matrix X** and an **adjacency matrix A**.
+
+### Node Feature Matrix X
+
+Each node has 4 features:
+
+| Feature | Column | Description |
+|---------|--------|-------------|
+| $x_1$ | `x` | horizontal coordinate (pixels) |
+| $x_2$ | `y` | vertical coordinate (pixels) |
+| $x_3$ | `width` | vessel width at the node |
+| $x_4$ | `type` | junction or endpoint |
+
+### Adjacency Matrix A
+
+The `edges` column encodes adjacency. Each node lists its neighbors as semicolon-separated IDs. This defines an undirected, unweighted adjacency matrix:
+
+If node 0 has `edges = "3;9;121"`, then $A_{0,3} = A_{0,9} = A_{0,121} = 1$.
+
+### CSV Columns
+
+**train_data.csv / test_data.csv:**
+
+| Column | Description |
+|--------|-------------|
+| `graph_id` | graph identifier (e.g. `D_21`, `S_44`) |
+| `node_id` | node index within graph |
+| `x`, `y` | pixel coordinates |
+| `width` | vessel width |
+| `type` | `junction` or `endpoint` |
+| `edges` | adjacent node IDs (semicolon-separated) |
+
+**train_labels.csv:**
+
+| Column | Description |
+|--------|-------------|
+| `graph_id` | graph identifier |
+| `label` | `0` = healthy, `1` = diabetic retinopathy |
 
 ---
 
-## CSV Data Format
+## How to Participate (Step by Step)
 
-### train_data.csv / test_data.csv
-| Column | Description |
-|--------|-------------|
-| graph_id | Graph ID (D_21, S_44, etc.) |
-| node_id | Node ID within graph |
-| x, y | Coordinates (pixels) |
-| width | Vessel width |
-| type | junction / endpoint |
-| edges | Adjacent nodes (semicolon-separated) |
+### Step 1: Clone the Repository
 
-### train_labels.csv
-| Column | Description |
-|--------|-------------|
-| graph_id | Graph ID |
-| label | 0=healthy, 1=diabetic retinopathy |
+```bash
+git clone https://github.com/muhammad0isah/GRAPE.git
+cd GRAPE
+```
 
----
+### Step 2: Install Dependencies
 
-## Submission Format
+```bash
+pip install pandas scikit-learn cryptography torch torch-geometric
+```
+
+### Step 3: Train Your Model and Generate Predictions
+
+Use `data/public/train_data.csv` and `data/public/train_labels.csv` to train a GNN, then predict labels for each graph in `data/public/test_data.csv`.
+
+A baseline GAT model is provided. Running it trains the model and generates `submission.csv` automatically:
+
+```bash
+python baseline.py
+```
+
+This outputs a file called `submission.csv` in the project root with the required format:
 
 ```csv
 graph_id,label
 D_25,0
 R_2,1
+S_235,0
+H_10,0
+...
 ```
 
-- `graph_id` must match test_data.csv
-- `label` must be 0 or 1
+You can build your own model — just make sure the output CSV has exactly these two columns, includes all 15 test graph IDs, and labels are `0` or `1`.
+
+### Step 4: Encrypt Your Predictions
+
+Submissions are encrypted so that other participants cannot see your predictions.
+
+```bash
+mkdir -p submissions/inbox/YOUR_TEAM_NAME
+python encryption/encrypt.py submission.csv submissions/inbox/YOUR_TEAM_NAME/submission.csv.enc
+```
+
+Replace `YOUR_TEAM_NAME` with your team name (no spaces, use underscores).
+
+### Step 5: Fork, Commit, and Open a Pull Request
+
+```bash
+# Fork this repo on GitHub first, then:
+git checkout -b submission/YOUR_TEAM_NAME
+git add submissions/inbox/YOUR_TEAM_NAME/submission.csv.enc
+git commit -m "Submission: YOUR_TEAM_NAME"
+git push origin submission/YOUR_TEAM_NAME
+```
+
+Then open a Pull Request from your fork to the main repository.
+
+### Step 6: Wait for Automated Scoring
+
+The CI pipeline will automatically:
+1. Decrypt your `.enc` file using the organizer's private key
+2. Validate the submission format
+3. Score against the hidden test labels
+4. Report your Macro F1 and AUROC in the PR
+
+Scores are published on the [leaderboard](https://muhammad0isah.github.io/GRAPE/leaderboard.html) after the PR is merged.
 
 ---
 
-## How to Submit
+## Rules
 
-1. Fork this repo
-2. Add `submissions/inbox/<team>/predictions.csv`
-3. Open PR
+- **One submission per team.** Only your first submission is scored.
+- **Predictions must be encrypted.** Raw `.csv` files are gitignored and will not be accepted.
+- **Training must complete within 3 hours on CPU.**
+- **No access to test labels.** They are stored as a GitHub Secret and never exposed.
+
+---
+
+## Evaluation
+
+Submissions are ranked by **Macro F1 Score** on the hidden test set. AUROC is reported as a secondary metric. Tied scores share the same rank.
+
+---
+
+## Baseline
+
+The provided baseline (`baseline.py`) uses a 3-layer GAT with multi-head attention, multi-pool readout, and graph-level topological features. It achieves a Macro F1 of **0.830**.
+
+Dependencies: `torch`, `torch-geometric`, `pandas`, `numpy`.
 
 ---
 

@@ -37,10 +37,17 @@ const state = {
 function renderTable(){
   const tbody = document.querySelector("#tbl tbody");
   tbody.innerHTML = "";
+  // Kaggle-style tied ranks: equal scores share the same rank
+  let rank = 1;
   state.filtered.forEach((r, idx) => {
+    if(idx > 0){
+      const prevScore = parseFloat(state.filtered[idx - 1].score);
+      const curScore = parseFloat(r.score);
+      if(curScore !== prevScore) rank = idx + 1;
+    }
     const tr = document.createElement("tr");
     const cells = [
-      ["rank", idx + 1],
+      ["rank", rank],
       ["team", r.team],
       ["model", r.model],
       ["score", r.score],

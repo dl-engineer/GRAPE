@@ -23,6 +23,9 @@ jobs:
       - name: Render leaderboard markdown
         run: python competition/render_leaderboard.py
 
+      - name: Sync leaderboard to docs
+        run: cp leaderboard/leaderboard.csv docs/leaderboard.csv
+
       - name: Commit rendered leaderboard
         run: |
           if git diff --quiet; then
@@ -31,6 +34,6 @@ jobs:
           fi
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add leaderboard/leaderboard.md
-          git commit -m "Update leaderboard.md"
+          git add leaderboard/leaderboard.md docs/leaderboard.csv
+          git commit -m "Update leaderboard"
           git push
