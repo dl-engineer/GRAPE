@@ -158,12 +158,22 @@ python encryption/encrypt.py submission.csv submissions/inbox/YOUR_TEAM_NAME/sub
 
 Replace `YOUR_TEAM_NAME` with your team name (no spaces, use underscores).
 
+**(Optional)** Add a `meta.yaml` in your team folder to display your model name and notes on the leaderboard:
+
+```yaml
+# submissions/inbox/YOUR_TEAM_NAME/meta.yaml
+model: VesselGCN
+notes: 3-layer GCN with skip connections
+```
+
+Both fields are optional. If you don't include `meta.yaml`, your entry will appear with no model name or notes.
+
 ### Step 5: Fork, Commit, and Open a Pull Request
 
 ```bash
 # Fork this repo on GitHub first, then:
 git checkout -b submission/YOUR_TEAM_NAME
-git add submissions/inbox/YOUR_TEAM_NAME/submission.csv.enc
+git add submissions/inbox/YOUR_TEAM_NAME/
 git commit -m "Submission: YOUR_TEAM_NAME"
 git push origin submission/YOUR_TEAM_NAME
 ```
